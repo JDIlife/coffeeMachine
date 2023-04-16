@@ -7,11 +7,18 @@
     android:background="#D6CACA"
     tools:context=".MainActivity">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="-4dp" />
+
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="64dp"
         android:text="커피 자판기"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.53"
@@ -35,7 +42,7 @@
         android:layout_width="160dp"
         android:layout_height="150dp"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="152dp"
+        android:layout_marginTop="196dp"
         android:background="#BC8F8F"
         android:checkedButton="@id/americano_radio_btn"
         app:layout_constraintStart_toStartOf="parent"
@@ -67,11 +74,11 @@
         android:id="@+id/coffee_size_radioGroup2"
         android:layout_width="160dp"
         android:layout_height="150dp"
-        android:layout_marginTop="152dp"
+        android:layout_marginTop="196dp"
         android:background="#BC8F8F"
         android:checkedButton="@id/small_size_radio_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.66"
+        app:layout_constraintHorizontal_bias="0.682"
         app:layout_constraintStart_toEndOf="@+id/coffee_menu_radioGroup"
         app:layout_constraintTop_toTopOf="parent">
 

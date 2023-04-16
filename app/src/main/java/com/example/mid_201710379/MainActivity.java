@@ -1,12 +1,20 @@
 package com.example.mid_201710379;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -23,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Toolbar 설정
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // UI 요소 지정
         Button initBtn = (Button) findViewById(R.id.init_btn);
@@ -171,5 +182,42 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
         }
+    }
+
+    // Toolbar 의 메뉴 설정
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_toolbar, menu);
+        return true;
+    }
+
+    // Toolbar 의 메뉴 아이템 클릭 이벤트 설정
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch (item.getItemId()){
+            case R.id.admin_page:{
+                EditText pwInput = new EditText(this);
+
+                String pw = "1234";
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("관리자 비밀번호를 입력하세요")
+                        .setView(pwInput)
+                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(pwInput.getText().toString().equals(pw)){
+                                    Intent intent = new Intent(getApplicationContext(), adminActivity.class);
+                                    startActivity(intent);
+                                }
+                            }
+                        })
+                        .setNegativeButton("cancel", null)
+                        .show();
+
+            }
+        }
+
+        return true;
     }
 }
