@@ -5,9 +5,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -195,25 +198,66 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
-            case R.id.admin_page:{
+            case R.id.admin_page:{ // 관리자 페이지 버튼을 누르면 비밀번호를 입력하는 다이얼로그가 나타난다
                 EditText pwInput = new EditText(this);
 
                 String pw = "1234";
 
+                // 다이얼로그를 기본적으로 셋팅한다
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("관리자 비밀번호를 입력하세요")
                         .setView(pwInput)
-                        .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        .setPositiveButton("ok", null)
+                        .setNegativeButton("cancel", null);
+
+                AlertDialog dialog = builder.create();
+                dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+                    @Override
+                    public void onShow(DialogInterface dialog) {
+                        // OK 버튼 지정
+                        Button positiveBtn = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+                        // 비밀번호 입력창이 비어있거나 빈칸인 상태라면 OK 버튼을 비활성화한다
+                        positiveBtn.setEnabled(!pwInput.getText().toString().isBlank());
+
+                        // TextWatcher 를 이용해서 EditText 의 입력값 변경에 따라 작업을 수행한다
+                        pwInput.addTextChangedListener(new TextWatcher() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                            }
+
+                            // pwInput 에 값이 입력되어있으면 ok 버튼을 활성화한다
+                            @Override
+                            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                                ((AlertDialog)dialog).getButton(android.app.AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                            }
+
+                            // 텍스트 변경이 끝났을 때 아무것도 입력되어있지 않으면 (+ 스페이스바만 입력된 경우도) ok 버튼을 다시 비활성화한다
+                            @Override
+                            public void afterTextChanged(Editable s) {
+                                ((AlertDialog) dialog).getButton(android.app.AlertDialog.BUTTON_POSITIVE).setEnabled(!pwInput.getText().toString().isBlank());
+                            }
+                        });
+
+                        // OK 버튼이 눌렸을 때의 이벤트 처리
+                        positiveBtn.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // 입력된 값이 비밀번호와 일치한다면 관리자페이지로 넘어가고 다이얼로그를 닫는다
                                 if(pwInput.getText().toString().equals(pw)){
                                     Intent intent = new Intent(getApplicationContext(), adminActivity.class);
                                     startActivity(intent);
+                                    dialog.dismiss();
+                                } else { // 입력된 값이 비밀번호와 일치하지 않는다면 입력된 값들을 지우고 힌트로 비밀번호를 잘못 입력했다고 알려준다
+                                    pwInput.setText("");
+                                    pwInput.setHint("잘못된 비밀번호입니다.");
                                 }
                             }
-                        })
-                        .setNegativeButton("cancel", null)
-                        .show();
+                        });
+                    }
+                });
+
+                // 다이얼로그를 띄운다
+                dialog.show();
 
             }
         }
