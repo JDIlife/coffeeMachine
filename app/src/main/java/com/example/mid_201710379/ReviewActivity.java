@@ -12,7 +12,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 
 public class ReviewActivity extends AppCompatActivity {
     @Override
@@ -33,15 +36,25 @@ public class ReviewActivity extends AppCompatActivity {
         EditText reviewEditText = (EditText) findViewById(R.id.review_edittext);
         Button postBtn = (Button) findViewById(R.id.post_btn);
 
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        reviewListView.setLayoutManager(linearLayoutManager);
+
+        // ReviewRecycleAdapter 로 전해줄 dataSet 생성
+        ArrayList<String> dataSet = new ArrayList<>();
 
         // post 버튼을 누르면 입력한 별점과 리뷰가 등록된다
         postBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String review = ratingBar.getRating() + reviewEditText.getText().toString();
-                Log.d("rating test", review);
+
+                // dataSet 에 입력받은 값을 추가해 ReviewRecycleAdapter 에 전달해준다
+                dataSet.add(review);
+                ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(dataSet);
+                reviewListView.setAdapter(reviewRecycleAdapter);
 
                 // 입력값을 초기화하고, 가상 키보드를 내린다
+                ratingBar.setRating(3);
                 reviewEditText.setText("");
                 InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(reviewEditText.getWindowToken(), 0);
