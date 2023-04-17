@@ -25,7 +25,9 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity android:name=".adminActivity"/>
+        <activity android:name=".AdminActivity"/>
+        <activity android:name=".ReviewActivity"
+            android:windowSoftInputMode="adjustUnspecified|adjustPan"/>
     </application>
 
 </manifest>

@@ -5,4 +5,7 @@
     <item
         android:id="@+id/admin_page"
         android:title="관리자페이지" />
+    <item
+        android:id="@+id/add_review"
+        android:title="별점 남기기" />
 </menu>

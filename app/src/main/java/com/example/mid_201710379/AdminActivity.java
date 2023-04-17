@@ -14,7 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-public class adminActivity extends AppCompatActivity {
+public class AdminActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
     private FragmentStateAdapter pagerAdapter;
@@ -28,6 +28,9 @@ public class adminActivity extends AppCompatActivity {
         // Toolbar 설정
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Toolbar 뒤로가기 버튼 활성화
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // TabLayout 설정
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -78,14 +81,25 @@ public class adminActivity extends AppCompatActivity {
     }
 
     // admin Toolbar 의 메뉴 아이템 클릭 이벤트 설정
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item){
+//        switch (item.getItemId()){
+//            case R.id.plus_stock:{
+//                Toast.makeText(this, "add stock", Toast.LENGTH_SHORT).show();
+//            }
+//        }
+//
+//        return true;
+//    }
+    // 툴바의 메뉴아이템을 눌렀을 때 발생하는 이벤트
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
-            case R.id.plus_stock:{
-                Toast.makeText(this, "add stock", Toast.LENGTH_SHORT).show();
+            case android.R.id.home: { // 뒤로가기 버튼을 누르면 메인 엑티비티로 돌아간다
+                finish();
+                return true;
             }
         }
-
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 }

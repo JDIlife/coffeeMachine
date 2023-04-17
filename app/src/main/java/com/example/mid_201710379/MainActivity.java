@@ -4,16 +4,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -60,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         Button calculateBtn = (Button) findViewById(R.id.calculate_btn);
         TextView totalPriceTextView = (TextView) findViewById(R.id.total_price_textview);
 
+        // - 버튼을 기본적으로 비활성하한다
         minusBtn.setEnabled(false);
 
 
@@ -70,11 +67,16 @@ public class MainActivity extends AppCompatActivity {
                 americanoBtn.setChecked(true);
                 smallSizeBtn.setChecked(true);
 
-                price = 0;
-
+                // 사진을 초기 이미지로 변경한다
                 coffeeImageView.setImageResource(R.drawable.americano);
 
+                // 값을 0으로 바꾼다
+                price = 0;
                 totalPriceTextView.setText("0");
+                // 갯수 설정도 1로 바꿔준다
+                amount = 1;
+                amountTextView.setText("1");
+                minusBtn.setEnabled(false);
             }
         });
 
@@ -82,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         calculateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // 이전에 계산했던 금액들을 지운다 (0으로 다시 초기화한다)
                 price = 0;
 
                 int menu  = menuRadioGroup.getCheckedRadioButtonId();
@@ -163,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 기본은 1로 시작하고, -,+ 버튼을 통해 숫자 증감소 (최소 숫자는 1이고, 0 이하는 나오지 않는다)
+    // 메뉴 숫자 설정: 기본은 1로 시작하고, -,+ 버튼을 통해 숫자 증감소 (최소 숫자는 1이고, 0 이하는 나오지 않는다)
     public void onAmountClicked(View view){
         TextView amountTextView = (TextView) findViewById(R.id.amount_textview);
         Button minusBtn = (Button) findViewById(R.id.minus_btn);
@@ -244,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(View v) {
                                 // 입력된 값이 비밀번호와 일치한다면 관리자페이지로 넘어가고 다이얼로그를 닫는다
                                 if(pwInput.getText().toString().equals(pw)){
-                                    Intent intent = new Intent(getApplicationContext(), adminActivity.class);
+                                    Intent intent = new Intent(getApplicationContext(), AdminActivity.class);
                                     startActivity(intent);
                                     dialog.dismiss();
                                 } else { // 입력된 값이 비밀번호와 일치하지 않는다면 입력된 값들을 지우고 힌트로 비밀번호를 잘못 입력했다고 알려준다
@@ -255,10 +258,14 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 });
-
                 // 다이얼로그를 띄운다
                 dialog.show();
-
+                break;
+            }
+            case R.id.add_review:{ // 별점 남기기를 클릭하면 리뷰페이지로 이동한다
+                Intent intent = new Intent(getApplicationContext(), ReviewActivity.class);
+                startActivity(intent);
+                break;
             }
         }
 
