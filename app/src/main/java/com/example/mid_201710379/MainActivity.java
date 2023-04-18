@@ -7,11 +7,13 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.renderscript.ScriptGroup;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -258,8 +260,9 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 });
-                // 다이얼로그를 띄운다
+                // 다이얼로그를 띄우고, 자동으로 pwInput 에 포커스를 준다
                 dialog.show();
+                pwInput.requestFocus();
                 break;
             }
             case R.id.add_review:{ // 별점 남기기를 클릭하면 리뷰페이지로 이동한다
