@@ -38,7 +38,7 @@
                     tools:layout_editor_absoluteX="140dp" />
 
                 <TextView
-                    android:id="@+id/textView6"
+                    android:id="@+id/coffee_beans_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -64,7 +64,7 @@
                     tools:layout_editor_absoluteY="426dp" />
 
                 <TextView
-                    android:id="@+id/textView12"
+                    android:id="@+id/steam_milk_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
@@ -92,7 +92,7 @@
                     tools:layout_editor_absoluteY="289dp" />
 
                 <TextView
-                    android:id="@+id/textView13"
+                    android:id="@+id/straw_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
@@ -117,7 +117,7 @@
                     tools:layout_editor_absoluteY="264dp" />
 
                 <TextView
-                    android:id="@+id/textView14"
+                    android:id="@+id/cup_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"

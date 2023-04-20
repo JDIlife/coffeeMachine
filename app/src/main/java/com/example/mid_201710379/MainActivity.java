@@ -7,13 +7,12 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.renderscript.ScriptGroup;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -22,15 +21,65 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     int price = 0;
     int amount = 1;
 
+    private static List<Stock> stockList;
+    private Stock stock;
+    private StockDao mStockDao;
+    private StockDatabase mStockDatabase;
+
+    // 데이터베이스의 값을 가져오는 스레드
+    class DBGetStockThread implements Runnable{
+        Stock stock = new Stock();
+        @Override
+        public void run(){
+            if(mStockDao.getStock().isEmpty()){ // 기존에 재고가 설정되어있지 않으면 기본 값으로 재고를 설정한다
+                mStockDao.insertStock(stock);
+            }
+            // 기존에 사용하던 재고가 있으면 그것을 사용한다
+            stockList = mStockDao.getStock();
+        }
+    }
+
+    // 사용한 재고와 판매 내역을 업데이트하는 스레드
+    class DBStockUseThread implements Runnable{
+        @Override
+        public void run(){
+            mStockDao.setStockUse(stock);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Room 데이터베이스 초기화
+        mStockDatabase = StockDatabase.getInstance(this);
+        mStockDao = mStockDatabase.stockDao();
+
+        // 데이터베이스에서 재고를 가져오는 스레드를 별도로 실행
+        DBGetStockThread dbGetStockThread = new DBGetStockThread();
+        Thread t = new Thread(dbGetStockThread);
+        t.start();
+
+        // 별도로 실행한 DBGetStockThread 에서 stockList 를 초기화할 때 까지 기다린다
+        try {
+            t.join();
+        } catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+        if(stockList != null && !stockList.isEmpty()){
+            stock = stockList.get(0);
+        }
+
 
         // Toolbar 설정
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -89,6 +138,12 @@ public class MainActivity extends AppCompatActivity {
                 // 이전에 계산했던 금액들을 지운다 (0으로 다시 초기화한다)
                 price = 0;
 
+                // 기본적으로 소모되는 재고
+                int coffeeBeans = 14;
+                int steamMilk = 0;
+                int straw = 1;
+                int cup = 1;
+
                 int menu  = menuRadioGroup.getCheckedRadioButtonId();
                 int size = sizeRadioGroup.getCheckedRadioButtonId();
 
@@ -96,18 +151,48 @@ public class MainActivity extends AppCompatActivity {
                     price += 1000;
                 } else if(menu == R.id.coffee_latte_radio_btn){
                     price += 1500;
+                    steamMilk = 150;
                 } else {
                     price += 2000;
+                    steamMilk = 130;
                 }
 
-                if(size == R.id.medium_size_radio_btn){
+                if(size == R.id.medium_size_radio_btn){ // 보통 사이즈에 대한 가격 증가, 한 잔에 사용하는 재고 증가
                     price += 500;
-                } else if(size == R.id.large_size_radio_btn){
+                    coffeeBeans += 7;
+                    if(steamMilk != 0){ // 메뉴가 아메리카노가 아니라서 steamMilk 가 0이 아니라 다른 값으로 들어있다면 스팀밀크도 증가시킨다
+                        steamMilk += 20;
+                    }
+                } else if(size == R.id.large_size_radio_btn){ // 라지 사이즈에 대한 가격 증가, 한 잔에 사용하는 재고 증가
+                    coffeeBeans += 3;
                     price += 1000;
+                    if(steamMilk != 0){
+                        steamMilk += 40;
+                    }
                 }
 
+                // 총 가격을 계산해서 보여주는 부분
                 int totalPrice = price * amount;
                 totalPriceTextView.setText(String.valueOf(totalPrice));
+
+                // 총 소요될 재고의 양
+                int usedCoffeeBeans = coffeeBeans * amount;
+                int usedSteamMilk = steamMilk * amount;
+                int usedStraw = straw * amount;
+                int usedCup = cup * amount;
+
+                // 판매 내역을 기록한다
+                String salesDetails =  String.valueOf(totalPrice);
+                List<String> salesList = new ArrayList<>(stock.getSalesDetails());
+                salesList.add(salesDetails);
+
+                stock.setCoffeeBeans(stock.getCoffeeBeans() - usedCoffeeBeans);
+                stock.setSteamMilk(stock.getSteamMilk() - usedSteamMilk);
+                stock.setStraw(stock.getStraw() - usedStraw);
+                stock.setCup(stock.getCup() - usedCup);
+                stock.setProfit(stock.getProfit() + totalPrice);
+                stock.setSalesDetails(salesList);
+
             }
         });
     }
@@ -273,5 +358,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return true;
+    }
+
+    // 결제하기 버튼 클릭 이벤트
+    public void onPayBtnClicked(View view){
+        if(price != 0){ // 계산 버튼을 누른 이후에만 결제하기가 수행된다
+            Toast.makeText(this, "결제가 완료되었습니다.", Toast.LENGTH_SHORT).show();
+
+            // 재고를 업데이트 한다
+            DBStockUseThread dbStockUseThread = new DBStockUseThread();
+            Thread t = new Thread(dbStockUseThread);
+            t.start();
+        }
     }
 }
