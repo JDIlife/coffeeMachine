@@ -22,4 +22,13 @@ public interface StockDao {
 
     @Query("SELECT * FROM Stock")
     List<Stock> getStock();
+
+    @Query("UPDATE Stock SET profit = :zero WHERE id = :stockId")
+    void withdrawProfit(int stockId, int zero);
+
+    @Query("UPDATE Stock SET coffeeBeans = :coffeeBeans , steamMilk = :steamMilk, straw = :straw, cup = :cup WHERE id = :stockId")
+    void fillStock(int coffeeBeans, int steamMilk, int straw, int cup, int stockId);
+
+    @Query("UPDATE Stock SET salesDetails = :salesDetails WHERE id = :stockId")
+    void emptySalesDetails(List<String> salesDetails, int stockId);
 }

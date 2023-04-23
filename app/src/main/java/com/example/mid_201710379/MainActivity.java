@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     int amount = 1;
 
     private static List<Stock> stockList;
-    private Stock stock;
+    public static Stock stock = new Stock();
     private StockDao mStockDao;
     private StockDatabase mStockDatabase;
 
@@ -106,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button calculateBtn = (Button) findViewById(R.id.calculate_btn);
         TextView totalPriceTextView = (TextView) findViewById(R.id.total_price_textview);
+        Button payBtn = (Button) findViewById(R.id.pay_btn);
 
         // - 버튼을 기본적으로 비활성하한다
         minusBtn.setEnabled(false);
@@ -181,8 +182,13 @@ public class MainActivity extends AppCompatActivity {
                 int usedStraw = straw * amount;
                 int usedCup = cup * amount;
 
-                // 판매 내역을 기록한다
-                String salesDetails =  String.valueOf(totalPrice);
+
+                // 판매 내역을 기록하기 위해 선택되어있는 라디오버튼을 가져온다
+                RadioButton menuRb = (RadioButton) findViewById(menu);
+                RadioButton sizeRb = (RadioButton) findViewById(size);
+
+                // 판매 내역을 기록한다 (메뉴 + 사이즈 + 개수 + 총 계산된 값)
+                String salesDetails =  menuRb.getText().toString() + sizeRb.getText().toString() +  String.valueOf(amount) + "_" + String.valueOf(totalPrice);
                 List<String> salesList = new ArrayList<>(stock.getSalesDetails());
                 salesList.add(salesDetails);
 
@@ -193,6 +199,23 @@ public class MainActivity extends AppCompatActivity {
                 stock.setProfit(stock.getProfit() + totalPrice);
                 stock.setSalesDetails(salesList);
 
+            }
+        });
+
+        // 결제하기 버튼 클릭 이벤트 설정
+        payBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(price != 0){ // 한 번 계산 버튼을 누른 이후에만 결제하기가 수행된다
+                    Toast.makeText(getApplicationContext(), "결제가 완료되었습니다.", Toast.LENGTH_SHORT).show();
+
+                    // 재고를 업데이트 한다
+                    DBStockUseThread dbStockUseThread = new DBStockUseThread();
+                    Thread t = new Thread(dbStockUseThread);
+                    t.start();
+                } else { // 계산 버튼을 한 번도 누르지 않았거나, 초기화 버튼을 누른 뒤에 바로 결제 버튼을 눌렀을 때 : 계산을 해달라는 알림을 띄워준다
+                    Toast.makeText(getApplicationContext(), "계산을 먼저 해주세요.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -360,15 +383,4 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    // 결제하기 버튼 클릭 이벤트
-    public void onPayBtnClicked(View view){
-        if(price != 0){ // 계산 버튼을 누른 이후에만 결제하기가 수행된다
-            Toast.makeText(this, "결제가 완료되었습니다.", Toast.LENGTH_SHORT).show();
-
-            // 재고를 업데이트 한다
-            DBStockUseThread dbStockUseThread = new DBStockUseThread();
-            Thread t = new Thread(dbStockUseThread);
-            t.start();
-        }
-    }
 }

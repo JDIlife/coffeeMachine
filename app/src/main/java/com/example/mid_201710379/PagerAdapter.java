@@ -1,5 +1,8 @@
 package com.example.mid_201710379;
 
+import android.util.Log;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -15,9 +18,9 @@ public class PagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         if(position == 0){
-            return new Fragment(R.layout.tab_fragment_one);
+            return new FragmentOne();
         } else {
-            return new Fragment(R.layout.tab_fragment_two);
+            return new FragmentTwo();
         }
     }
 

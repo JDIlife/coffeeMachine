@@ -2,10 +2,12 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/framelayout_one"
     android:layout_width="match_parent"
     android:layout_height="530dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintlayout_one"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -22,7 +24,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id="@+id/sales_detail_recyclerview"
             android:layout_width="410dp"
             android:layout_height="410dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -44,7 +46,7 @@
             android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
+            app:layout_constraintTop_toBottomOf="@+id/sales_detail_recyclerview" />
 
         <Button
             android:id="@+id/withdraw_btn"
@@ -54,7 +56,7 @@
             android:layout_marginEnd="24dp"
             android:text="출금하기"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
+            app:layout_constraintTop_toBottomOf="@+id/sales_detail_recyclerview" />
 
         <TextView
             android:id="@+id/sales_revenue_textview"
@@ -67,7 +69,7 @@
             app:layout_constraintEnd_toStartOf="@+id/withdraw_btn"
             app:layout_constraintHorizontal_bias="0.361"
             app:layout_constraintStart_toEndOf="@+id/textview1"
-            app:layout_constraintTop_toBottomOf="@+id/recyclerView" />
+            app:layout_constraintTop_toBottomOf="@+id/sales_detail_recyclerview" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
