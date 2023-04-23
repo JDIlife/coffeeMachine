@@ -28,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
 
     int price = 0;
     int amount = 1;
+    // 재고가 부족하여 계산할 수 없는 경우를 판별하는 플래그 (1: 재고 있음, 결제 가능 0: 재고 없음, 결제 불가능)
+    int flag = 1;
 
     private static List<Stock> stockList;
     public static Stock stock = new Stock();
@@ -64,21 +66,10 @@ public class MainActivity extends AppCompatActivity {
         mStockDatabase = StockDatabase.getInstance(this);
         mStockDao = mStockDatabase.stockDao();
 
-        // 데이터베이스에서 재고를 가져오는 스레드를 별도로 실행
+       // 데이터베이스에서 재고를 가져오는 스레드를 별도로 실행
         DBGetStockThread dbGetStockThread = new DBGetStockThread();
         Thread t = new Thread(dbGetStockThread);
         t.start();
-
-        // 별도로 실행한 DBGetStockThread 에서 stockList 를 초기화할 때 까지 기다린다
-        try {
-            t.join();
-        } catch (InterruptedException e){
-            e.printStackTrace();
-        }
-
-        if(stockList != null && !stockList.isEmpty()){
-            stock = stockList.get(0);
-        }
 
 
         // Toolbar 설정
@@ -110,7 +101,6 @@ public class MainActivity extends AppCompatActivity {
 
         // - 버튼을 기본적으로 비활성하한다
         minusBtn.setEnabled(false);
-
 
         // 초기화 버튼을 누르면 아메리카노, SMALL 로 체크되고 이미지도 처음 이미지로 변경, 계산된 숫자도 0으로 만든다
         initBtn.setOnClickListener(new View.OnClickListener() {
@@ -144,6 +134,22 @@ public class MainActivity extends AppCompatActivity {
                 int steamMilk = 0;
                 int straw = 1;
                 int cup = 1;
+
+                // 데이터베이스에서 재고를 가져오는 스레드를 별도로 실행
+                DBGetStockThread dbGetStockThread = new DBGetStockThread();
+                Thread t = new Thread(dbGetStockThread);
+                t.start();
+
+                // 별도로 실행한 DBGetStockThread 에서 stockList 를 초기화할 때 까지 기다린다
+                try {
+                    t.join();
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+
+                if(stockList != null && !stockList.isEmpty()){
+                    stock = stockList.get(0);
+                }
 
                 int menu  = menuRadioGroup.getCheckedRadioButtonId();
                 int size = sizeRadioGroup.getCheckedRadioButtonId();
@@ -192,12 +198,24 @@ public class MainActivity extends AppCompatActivity {
                 List<String> salesList = new ArrayList<>(stock.getSalesDetails());
                 salesList.add(salesDetails);
 
-                stock.setCoffeeBeans(stock.getCoffeeBeans() - usedCoffeeBeans);
-                stock.setSteamMilk(stock.getSteamMilk() - usedSteamMilk);
-                stock.setStraw(stock.getStraw() - usedStraw);
-                stock.setCup(stock.getCup() - usedCup);
-                stock.setProfit(stock.getProfit() + totalPrice);
-                stock.setSalesDetails(salesList);
+                // 재고가 없는 경우는 flag 를 0으로, 재고가 있는 경우에는 flag 를 1로 만든다
+                if(stock.getCoffeeBeans() - usedCoffeeBeans < 0 || stock.getStraw() - usedStraw < 0 || stock.getCup() - usedCup < 0){ // 커피 원두, 빨대, 컵 중 하나라도 모자란 것이 있을 때
+                    flag = 0;
+                    totalPriceTextView.setText("남은 재고로 주문 불가");
+                } else if(stock.getSteamMilk() - usedSteamMilk < 0 && menuRb.getText().equals("카페라떼(1500원)") || menuRb.getText().equals("카푸치노(2000원)")){ // 계산했을 때 스팀밀크가 모자란 경우 (아메리카노만 결제 가능)
+                    flag = 0;
+                    totalPriceTextView.setText("아메리카노만 주문 가능");
+                } else { // 재고가 모자라지 않는다면 해당 주문만큼 재고 업데이트 설정
+                    flag = 1;
+
+                    stock.setCoffeeBeans(stock.getCoffeeBeans() - usedCoffeeBeans);
+                    stock.setSteamMilk(stock.getSteamMilk() - usedSteamMilk);
+                    stock.setStraw(stock.getStraw() - usedStraw);
+                    stock.setCup(stock.getCup() - usedCup);
+                    stock.setProfit(stock.getProfit() + totalPrice);
+                    stock.setSalesDetails(salesList);
+
+                }
 
             }
         });
@@ -206,14 +224,17 @@ public class MainActivity extends AppCompatActivity {
         payBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(price != 0){ // 한 번 계산 버튼을 누른 이후에만 결제하기가 수행된다
+                if(flag == 0){ // 재고가 없다면, 재고가 없어서 결제할 수 없다는 알림을 띄워준다
+                    Toast.makeText(getApplicationContext(), "재고 부족으로 결제하실 수 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if(price != 0){ // 한 번 계산 버튼을 누른 이후에만 결제하기가 수행된다
                     Toast.makeText(getApplicationContext(), "결제가 완료되었습니다.", Toast.LENGTH_SHORT).show();
 
-                    // 재고를 업데이트 한다
+                    // 재고를 업데이트 한다 (계산 버튼을 클릭했을 때 설정된 stock 으로)
                     DBStockUseThread dbStockUseThread = new DBStockUseThread();
                     Thread t = new Thread(dbStockUseThread);
                     t.start();
-                } else { // 계산 버튼을 한 번도 누르지 않았거나, 초기화 버튼을 누른 뒤에 바로 결제 버튼을 눌렀을 때 : 계산을 해달라는 알림을 띄워준다
+                }else { // 계산 버튼을 한 번도 누르지 않았거나, 초기화 버튼을 누른 뒤에 바로 결제 버튼을 눌렀을 때 : 계산을 해달라는 알림을 띄워준다
                     Toast.makeText(getApplicationContext(), "계산을 먼저 해주세요.", Toast.LENGTH_SHORT).show();
                 }
             }

@@ -191,14 +191,14 @@
 
     <TextView
         android:id="@+id/total_price_textview"
-        android:layout_width="117dp"
-        android:layout_height="37dp"
-        android:layout_marginTop="36dp"
+        android:layout_width="160dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="28dp"
         android:gravity="center"
         android:text="0"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.714"
+        app:layout_constraintHorizontal_bias="0.717"
         app:layout_constraintStart_toEndOf="@+id/calculate_btn"
         app:layout_constraintTop_toBottomOf="@+id/coffee_imageview" />
 
