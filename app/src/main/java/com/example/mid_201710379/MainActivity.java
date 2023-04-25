@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                     totalPriceTextView.setText("남은 재고로 주문 불가");
                 } else if(stock.getSteamMilk() - usedSteamMilk < 0 && menuRb.getText().equals("카페라떼(1500원)") || menuRb.getText().equals("카푸치노(2000원)")){ // 계산했을 때 스팀밀크가 모자란 경우 (아메리카노만 결제 가능)
                     flag = 0;
-                    totalPriceTextView.setText("아메리카노만 주문 가능");
+                    totalPriceTextView.setText("스팀밀크 재고 부족");
                 } else { // 재고가 모자라지 않는다면 해당 주문만큼 재고 업데이트 설정
                     flag = 1;
 
@@ -334,6 +335,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()){
             case R.id.admin_page:{ // 관리자 페이지 버튼을 누르면 비밀번호를 입력하는 다이얼로그가 나타난다
                 EditText pwInput = new EditText(this);
+                pwInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_PASSWORD);
 
                 String pw = "1234";
 

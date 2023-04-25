@@ -16,8 +16,37 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ReviewActivity extends AppCompatActivity {
+
+    private ReviewDao mReviewDao;
+    private ReviewDatabase mReviewDatabase;
+    private List<Review> reviewList = new ArrayList<>();
+    public static Review review = new Review();
+
+    class GetReviewThread implements Runnable{
+        @Override
+        public void run() {
+            reviewList = mReviewDao.getAllReview();
+        }
+    }
+
+    class InsertReviewThread implements Runnable{
+        @Override
+        public void run(){
+            mReviewDao.insertReview(review);
+        }
+    }
+
+    class DeleteReviewThread implements Runnable{
+        @Override
+        public void run(){
+            mReviewDao.deleteReview(review);
+        }
+    }
+
+
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -30,27 +59,51 @@ public class ReviewActivity extends AppCompatActivity {
         // Toolbar 뒤로가기 버튼 활성화
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        // Room 데이터베이스 초기화
+        mReviewDatabase = ReviewDatabase.getInstance(getApplicationContext());
+        mReviewDao = mReviewDatabase.reviewDao();
+
+        // 데이터베이스에서 리뷰를 가져오는 스레드를 별도로 실행
+        GetReviewThread getReviewThread = new GetReviewThread();
+        Thread t = new Thread(getReviewThread);
+        t.start();
+
+        // DB 에서 리뷰 데이터를 가져오는 것이 완료될 때 까지 기다린다
+        try{
+            t.join();
+        } catch (Exception e){}
+
+
         // UI 지정
         RecyclerView reviewListView = (RecyclerView) findViewById(R.id.review_recyclerview);
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar);
         EditText reviewEditText = (EditText) findViewById(R.id.review_edittext);
         Button postBtn = (Button) findViewById(R.id.post_btn);
 
+        // RecyclerView 에 LinearLayoutManager 지정
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         reviewListView.setLayoutManager(linearLayoutManager);
 
-        // ReviewRecycleAdapter 로 전해줄 dataSet 생성
-        ArrayList<String> dataSet = new ArrayList<>();
+        ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(reviewList);
+        reviewListView.setAdapter(reviewRecycleAdapter);
+
 
         // post 버튼을 누르면 입력한 별점과 리뷰가 등록된다
         postBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String review = ratingBar.getRating() + reviewEditText.getText().toString();
+                review = new Review(); // review 를 삭제한 이후에 다시 review 를 post 할 때, 삭제 했던 review 의 id 를 다시 쓰지 않도록 새롭게 초기화한다
+                review.setRating(ratingBar.getRating());
+                review.setReview(reviewEditText.getText().toString());
 
                 // dataSet 에 입력받은 값을 추가해 ReviewRecycleAdapter 에 전달해준다
-                dataSet.add(review);
-                ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(dataSet);
+                reviewList.add(review);
+
+                InsertReviewThread insertReviewThread = new InsertReviewThread();
+                Thread t = new Thread(insertReviewThread);
+                t.start();
+
+                ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(reviewList);
                 reviewListView.setAdapter(reviewRecycleAdapter);
 
                 // 입력값을 초기화하고, 가상 키보드를 내린다
@@ -67,10 +120,24 @@ public class ReviewActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case android.R.id.home: { // 뒤로가기 버튼을 누르면 메인 엑티비티로 돌아간다
+
+                DeleteReviewThread deleteReviewThread = new DeleteReviewThread();
+                Thread t = new Thread(deleteReviewThread);
+                t.start();
+
                 finish();
                 return true;
             }
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+
+        DeleteReviewThread deleteReviewThread = new DeleteReviewThread();
+        Thread t = new Thread(deleteReviewThread);
+        t.start();
     }
 }

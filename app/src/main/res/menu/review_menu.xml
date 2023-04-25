@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/plus_stock"
-        android:title="재고 채우기" />
+        android:id="@+id/delete_review"
+        android:title="리뷰삭제" />
 </menu>

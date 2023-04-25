@@ -87,24 +87,6 @@ public class AdminActivity extends AppCompatActivity {
 
     }
 
-    // Toolbar 의 메뉴 설정
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.menu_admin_toolbar, menu);
-        return true;
-    }
-
-    // admin Toolbar 의 메뉴 아이템 클릭 이벤트 설정
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item){
-//        switch (item.getItemId()){
-//            case R.id.plus_stock:{
-//                Toast.makeText(this, "add stock", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//
-//        return true;
-//    }
     // 툴바의 메뉴아이템을 눌렀을 때 발생하는 이벤트
     @Override
     public boolean onOptionsItemSelected(MenuItem item){

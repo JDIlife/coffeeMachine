@@ -95,7 +95,7 @@ public class FragmentOne extends Fragment {
         withdrawBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getContext(), "withdraw", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "정상적으로 출금되었습니다.", Toast.LENGTH_SHORT).show();
 
                 // profit 을 0 으로 업데이트하는 스레드 실행
                 DBWithdrawThread dbWithdrawThread = new DBWithdrawThread();
