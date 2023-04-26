@@ -20,11 +20,12 @@ import java.util.List;
 
 public class ReviewActivity extends AppCompatActivity {
 
-    private ReviewDao mReviewDao;
+    public static ReviewDao mReviewDao;
     private ReviewDatabase mReviewDatabase;
     private List<Review> reviewList = new ArrayList<>();
-    public static Review review = new Review();
+    public  Review review = new Review();
 
+    // 리뷰 데이터를 가져오는 스레드
     class GetReviewThread implements Runnable{
         @Override
         public void run() {
@@ -32,20 +33,14 @@ public class ReviewActivity extends AppCompatActivity {
         }
     }
 
+    // 리뷰를 추가하는 스레드
     class InsertReviewThread implements Runnable{
         @Override
         public void run(){
-            mReviewDao.insertReview(review);
+            long reviewId = mReviewDao.insertReview(review);
+            review.setId(reviewId);
         }
     }
-
-    class DeleteReviewThread implements Runnable{
-        @Override
-        public void run(){
-            mReviewDao.deleteReview(review);
-        }
-    }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -83,10 +78,9 @@ public class ReviewActivity extends AppCompatActivity {
         // RecyclerView 에 LinearLayoutManager 지정
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         reviewListView.setLayoutManager(linearLayoutManager);
-
+        // RecyclerView 를
         ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(reviewList);
         reviewListView.setAdapter(reviewRecycleAdapter);
-
 
         // post 버튼을 누르면 입력한 별점과 리뷰가 등록된다
         postBtn.setOnClickListener(new View.OnClickListener() {
@@ -99,9 +93,10 @@ public class ReviewActivity extends AppCompatActivity {
                 // dataSet 에 입력받은 값을 추가해 ReviewRecycleAdapter 에 전달해준다
                 reviewList.add(review);
 
+                // review 를 추가하는 스레드 실행
                 InsertReviewThread insertReviewThread = new InsertReviewThread();
-                Thread t = new Thread(insertReviewThread);
-                t.start();
+                Thread irt = new Thread(insertReviewThread);
+                irt.start();
 
                 ReviewRecycleAdapter reviewRecycleAdapter = new ReviewRecycleAdapter(reviewList);
                 reviewListView.setAdapter(reviewRecycleAdapter);
@@ -118,26 +113,11 @@ public class ReviewActivity extends AppCompatActivity {
     // 툴바의 메뉴아이템을 눌렀을 때 발생하는 이벤트
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
-        switch (item.getItemId()){
-            case android.R.id.home: { // 뒤로가기 버튼을 누르면 메인 엑티비티로 돌아간다
-
-                DeleteReviewThread deleteReviewThread = new DeleteReviewThread();
-                Thread t = new Thread(deleteReviewThread);
-                t.start();
-
-                finish();
-                return true;
-            }
+        if(item.getItemId() == android.R.id.home){ // 뒤로가기 버튼을 누르면 메인 엑티비티로 돌아간다
+            finish();
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onPause(){
-        super.onPause();
-
-        DeleteReviewThread deleteReviewThread = new DeleteReviewThread();
-        Thread t = new Thread(deleteReviewThread);
-        t.start();
-    }
 }

@@ -1,6 +1,7 @@
 package com.example.mid_201710379;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,15 +19,59 @@ import java.util.List;
 public class ReviewRecycleAdapter extends RecyclerView.Adapter<ReviewRecycleAdapter.ViewHolder> {
 
     private List<Review> localDataSet = new ArrayList<>();
+    private Review review;
+
+    // 리뷰를 삭제하는 스레드
+    class DeleteReviewThread implements Runnable{
+        @Override
+        public void run(){
+            ReviewActivity.mReviewDao.deleteReview(review);
+        }
+    }
 
     // 뷰홀더
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder{
         private TextView rating;
         private TextView reviewText;
         public ViewHolder(@NonNull View itemView){
             super(itemView);
             rating = itemView.findViewById(R.id.item_rating);
             reviewText = itemView.findViewById(R.id.item_review_text);
+
+            // RecyclerView 의 item 을 길게 터치했을 때 이벤트 설정
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+
+                    int pos = getAdapterPosition();
+                    review = localDataSet.get(pos);
+
+                    if(pos != RecyclerView.NO_POSITION){
+                        PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
+                        popupMenu.getMenuInflater().inflate(R.menu.review_menu, popupMenu.getMenu());
+
+                        // 팝업 메뉴의 메뉴 아이템을 클릭했을 때의 이벤트를 설정한다
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            if(item.getItemId() == R.id.delete_review){ // 리뷰 삭제 버튼을 누르면 해당 리뷰를 삭제한다
+                                // 리뷰를 삭제하는 스레드 실행
+                                DeleteReviewThread deleteReviewThread = new DeleteReviewThread();
+                                Thread t = new Thread(deleteReviewThread);
+                                t.start();
+
+                                localDataSet.remove(pos);
+                                notifyItemRemoved(pos);
+                                }
+
+                            return false;
+                            }
+                        });
+                        popupMenu.show();
+                    }
+                    return false;
+                }
+            });
         }
     }
 
@@ -46,37 +91,11 @@ public class ReviewRecycleAdapter extends RecyclerView.Adapter<ReviewRecycleAdap
 
     // ViewHolder 에 데이터를 연동한다
     @Override
-
     public void onBindViewHolder(@NonNull ReviewRecycleAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        Review review = localDataSet.get(position);
+        review = localDataSet.get(position);
+
         holder.rating.setText(String.valueOf(review.getRating()));
         holder.reviewText.setText(review.getReview());
-
-        // 리뷰를 롱터치했을 때 이벤트 설정
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) { // 롱터치하면 팝업 메뉴를 띄운다
-                PopupMenu popupMenu = new PopupMenu(v.getContext(), v);
-                popupMenu.getMenuInflater().inflate(R.menu.review_menu, popupMenu.getMenu());
-                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        if(item.getItemId() == R.id.delete_review){ // 리뷰 삭제 버튼을 누르면 해당 리뷰를 삭제한다
-                            // ReviewActivity 의 review 를 리뷰 삭제가 클릭된 review 로 대입해서 DeleteReviewThread 가 실행될 때 정상적으로 해당 review 가 삭제되도록 한다
-                            ReviewActivity.review = localDataSet.get(position);
-
-                            localDataSet.remove(position);
-                            notifyItemRemoved(position);
-                        }
-
-                        return false;
-                    }
-                });
-                popupMenu.show();
-
-                return false;
-            }
-        });
     }
 
     @Override

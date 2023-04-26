@@ -12,7 +12,7 @@ import java.util.List;
 public interface ReviewDao {
 
     @Insert
-    void insertReview(Review review);
+    long insertReview(Review review);
 
     @Delete
     void deleteReview(Review review);
